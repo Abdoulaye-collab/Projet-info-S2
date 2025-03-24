@@ -1,0 +1,77 @@
+D'accord, merci pour ton code ! Il s'agit d'un projet utilisant **Flask**, qui est un micro-framework web pour Python. Voici les étapes pour exécuter ce code localement.
+
+### Prérequis
+
+1. **Installer Python** (si ce n'est pas déjà fait) :
+   - Télécharge Python depuis [python.org](https://www.python.org/downloads/). Assure-toi que la version installée est compatible avec Flask (Python 3.x).
+
+2. **Installer les dépendances nécessaires** :
+   - Tu auras besoin de Flask et de `requests` pour faire des appels HTTP vers l'API de News.
+   
+### Étapes pour exécuter ton code :
+
+#### 1. **Configurer un environnement virtuel** (facultatif mais recommandé)
+   - Crée un environnement virtuel dans ton répertoire de projet pour isoler les dépendances :
+     ```bash
+     python -m venv venv
+     ```
+   - Active l'environnement virtuel :
+     - Sur **Windows** :
+       ```bash
+       .\venv\Scripts\activate
+       ```
+     - Sur **Mac/Linux** :
+       ```bash
+       source venv/bin/activate
+       ```
+
+#### 2. **Installer les dépendances** :
+   - Installe Flask et Requests via `pip` :
+     ```bash
+     pip install Flask requests
+     ```
+
+#### 3. **Exécuter ton code** :
+   - Sauvegarde ton fichier avec le code dans un fichier Python, par exemple `app.py`.
+   - Exécute le fichier avec la commande suivante :
+     ```bash
+     python app.py
+     ```
+
+#### 4. **Accéder à ton application** :
+   - Si tout fonctionne correctement, tu devrais voir un message indiquant que l'application Flask est en cours d'exécution sur un serveur local, généralement à l'adresse :
+     ```bash
+     http://127.0.0.1:5000
+     ```
+
+   - Si tu accèdes à cette URL depuis ton navigateur, tu devrais voir le fichier `index.html` contenu dans ton répertoire `../static`.
+
+#### 5. **Vérifier l'API** :
+   - L'API que tu as créée est accessible à l'adresse :
+     ```bash
+     http://127.0.0.1:5000/api/tesla-news
+     ```
+   - Cela devrait retourner des actualités Tesla sous format JSON.
+
+### Points supplémentaires :
+- **Clé API** : Tu utilises une clé API pour accéder à l'API News (NewsAPI). Assure-toi que cette clé est valide et fonctionne. Tu peux aussi envisager de ne pas exposer ta clé dans le code pour des raisons de sécurité (par exemple, en utilisant une variable d'environnement).
+  
+  Exemple pour définir une variable d'environnement :
+  - Sur **Windows** :
+    ```bash
+    set NEWS_API_KEY=ta_clé_api
+    ```
+  - Sur **Mac/Linux** :
+    ```bash
+    export NEWS_API_KEY=ta_clé_api
+    ```
+
+- **Fichier `index.html`** : Assure-toi que le fichier `index.html` se trouve bien dans le répertoire `../static` relatif à l'emplacement du fichier Python.
+
+### En résumé :
+1. Installe Python et crée un environnement virtuel.
+2. Installe les dépendances Flask et Requests.
+3. Exécute le fichier Python.
+4. Accède à ton application sur `http://127.0.0.1:5000` et teste l'API sur `http://127.0.0.1:5000/api/tesla-news`.
+
+Dis-moi si tu rencontres des soucis ou si tu as besoin de plus de détails ! 😊
