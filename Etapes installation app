@@ -1,4 +1,3 @@
-D'accord, merci pour ton code ! Il s'agit d'un projet utilisant **Flask**, qui est un micro-framework web pour Python. Voici les étapes pour exécuter ce code localement.
 
 ### Prérequis
 
@@ -73,5 +72,3 @@ D'accord, merci pour ton code ! Il s'agit d'un projet utilisant **Flask**, qui e
 2. Installe les dépendances Flask et Requests.
 3. Exécute le fichier Python.
 4. Accède à ton application sur `http://127.0.0.1:5000` et teste l'API sur `http://127.0.0.1:5000/api/tesla-news`.
-
-Dis-moi si tu rencontres des soucis ou si tu as besoin de plus de détails ! 😊
