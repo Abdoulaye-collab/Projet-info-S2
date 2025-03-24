@@ -3,7 +3,7 @@ import requests
 
 app = Flask(__name__, static_folder='../static', static_url_path='')
 
-NEWS_API_KEY = ''  # Remplace ici
+NEWS_API_KEY = 'b741529903424b0ca280b6e9d8f7c32d'  # Remplace ici
 
 @app.route('/')
 def index():
