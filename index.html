@@ -2,27 +2,92 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Actus Tesla</title>
-</head>
+  <title>Actualités GAFAM + Tesla</title>
+  <link rel="stylesheet" href="style.css">
+</head><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <body>
-  <h1>📰 Actualités Tesla</h1>
-  <div id="news"></div>
+  <h1>📊 Actualités & Tendances des GAFAM + Tesla</h1>
 
+  <div id="boutons-entreprises">
+    <button onclick="afficherInfos('Google')">Google</button>
+    <button onclick="afficherInfos('Apple')">Apple</button>
+    <button onclick="afficherInfos('Facebook')">Facebook</button>
+    <button onclick="afficherInfos('Amazon')">Amazon</button>
+    <button onclick="afficherInfos('Microsoft')">Microsoft</button>
+    <button onclick="afficherInfos('Tesla')">Tesla</button>
+  </div>
+
+  <div id="zone-affichage">
+    <h2 id="titre-entreprise"></h2>
+    <canvas id="graphique"></canvas>
+    <p id="tendance"></p>
+    <div id="actus"></div>
+  </div>
+
+  <script src="chart.js"></script>
   <script>
-    fetch('/api/tesla-news')
+    let donneesActualites = {};
+
+    fetch('/api/actualites-entreprises')
       .then(res => res.json())
       .then(data => {
-        const news = document.getElementById('news');
-        data.articles.forEach(article => {
-          const bloc = document.createElement('div');
-          bloc.innerHTML = `
-            <h3>${article.title}</h3>
-            <p>${article.description}</p>
-            <a href="${article.url}" target="_blank">Lire plus</a>
-            <hr>`;
-          news.appendChild(bloc);
-        });
+        donneesActualites = data;
       });
+
+    function afficherInfos(nom) {
+      document.getElementById("titre-entreprise").textContent = nom;
+      afficherGraphique(nom);
+      afficherTendance(nom);
+      afficherActus(nom);
+    }
+
+    function afficherGraphique(nom) {
+      const ctx = document.getElementById("graphique").getContext("2d");
+      if (window.monGraphique) window.monGraphique.destroy();
+
+      const valeurs = Array.from({ length: 7 }, () => Math.floor(Math.random() * 100) + 100);
+      const labels = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+      window.monGraphique = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: `Évolution du cours de ${nom}`,
+            data: valeurs,
+            borderWidth: 2,
+            fill: false,
+            borderColor: "#cc0000"
+          }]
+        }
+      });
+    }
+
+    function afficherTendance(nom) {
+      const tendance = Math.random() > 0.5 ? "⬆️ Tendance à la hausse" : "⬇️ Tendance à la baisse";
+      document.getElementById("tendance").textContent = tendance;
+    }
+
+    function afficherActus(nom) {
+      const zone = document.getElementById("actus");
+      zone.innerHTML = "";
+
+      donneesActualites[nom].forEach(article => {
+        const bloc = document.createElement("div");
+        const date = new Date(article.publishedAt).toLocaleDateString("fr-FR", {
+          year: "numeric", month: "long", day: "numeric"
+        });
+
+        bloc.innerHTML = `
+          <h3>${article.title}</h3>
+          <p>${article.description || ""}</p>
+          <small>Publié le ${date}</small><br>
+          <a href="${article.url}" target="_blank">Lire l’article complet</a>
+          <hr>
+        `;
+        zone.appendChild(bloc);
+      });
+    }
   </script>
 </body>
 </html>
