@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Actus Tesla</title>
+</head>
+<body>
+  <h1>📰 Actualités Tesla</h1>
+  <div id="news"></div>
+
+  <script>
+    fetch('/api/tesla-news')
+      .then(res => res.json())
+      .then(data => {
+        const news = document.getElementById('news');
+        data.articles.forEach(article => {
+          const bloc = document.createElement('div');
+          bloc.innerHTML = `
+            <h3>${article.title}</h3>
+            <p>${article.description}</p>
+            <a href="${article.url}" target="_blank">Lire plus</a>
+            <hr>`;
+          news.appendChild(bloc);
+        });
+      });
+  </script>
+</body>
+</html>
