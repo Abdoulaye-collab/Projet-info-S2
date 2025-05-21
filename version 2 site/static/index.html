@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Boursoramax - Cotes & Actus GAFAM</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    #cartes-entreprises {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+    .carte-entreprise {
+      background-color: #1e1e1e;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      width: 100px;
+      transition: transform 0.2s;
+    }
+    .carte-entreprise:hover {
+      transform: scale(1.05);
+      background-color: #2a2a2a;
+    }
+    .carte-entreprise img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 10px 5px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .bouton-vert {
+      background-color: #27ae60;
+      color: white;
+    }
+    .bouton-rouge {
+      background-color: #c0392b;
+      color: white;
+    }
+    canvas {
+      background-color: #2b2b2b;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    #actus ul {
+      list-style: disc;
+      margin-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 Boursoramax</h1>
+  <p>💰 Solde : <span id="solde">100</span> pièces</p>
+  <input type="number" id="input-mise" value="10" min="1" /> 
+  <button id="reset">Réinitialiser</button>
+
+  <div id="cartes-entreprises"></div>
+
+  <h2 id="titre-entreprise"></h2>
+  <canvas id="graphique-cours" height="80"></canvas>
+  <div id="actus"></div>
+  <div id="resultat-simulation"></div>
+
+  <h3>📉 Historique des paris</h3>
+  <canvas id="graphique-historique" height="80"></canvas>
+
+  <script>
+    const entreprises = {
+      Google: { 
+        logo: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+        lienActus: "https://news.google.com/home?ceid=FR%3Afr&gl=FR&hl=fr"
+      },
+      Apple: { 
+        logo: "https://cdn-icons-png.flaticon.com/512/0/747.png",
+        lienActus: "https://www.apple.com/newsroom/"
+      },
+      Facebook: { 
+        logo: "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg",
+        lienActus: "https://fr-fr.facebook.com/business/news/facebook"
+      },
+      Amazon: { 
+        logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+        lienActus: "https://www.aboutamazon.com/news"
+      },
+      Microsoft: { 
+        logo: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+        lienActus: "https://news.microsoft.com/fr-fr/recent-news/"
+      },
+      Tesla: { 
+        logo: "https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png",
+        lienActus: "https://www.automobile-propre.com/marque/tesla/actualites/"
+      }
+    };
+
+    const motsPositifs = ["hausse", "croissance", "record", "accord", "partenariat", "investit", "réussi"];
+    const motsNegatifs = ["baisse", "perte", "retard", "échec", "problème", "controverse"];
+
+    let solde = 100;
+    let historiqueParis = [];
+
+    const graphiqueCours = new Chart(document.getElementById("graphique-cours").getContext("2d"), {
+      type: 'line',
+      data: {
+        labels: Array.from({length: 10}, (_, i) => `J-${9 - i}`),
+        datasets: [{
+          label: 'Cours Boursier (fictif)',
+          data: [],
+          borderColor: '#00ffff',
+          fill: false
+        }]
+      },
+      options: { scales: { y: { beginAtZero: false } } }
+    });
+
+    const graphiqueHistorique = new Chart(document.getElementById("graphique-historique").getContext("2d"), {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Résultat du pari (€)',
+          data: [],
+          backgroundColor: d => d.raw >= 0 ? '#2ecc71' : '#e74c3c'
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true } },
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    function majHistorique(gain, entreprise, type) {
+      historiqueParis.push({ gain, label: `${entreprise} (${type})` });
+      graphiqueHistorique.data.labels = historiqueParis.map(h => h.label);
+      graphiqueHistorique.data.datasets[0].data = historiqueParis.map(h => h.gain);
+      graphiqueHistorique.update();
+    }
+
+    function genererActusIA(nom) {
+      const themes = ["lance un nouveau produit", "signe un contrat majeur", "fait face à une controverse", "bat un record de ventes", "investit dans l'IA", "subit une perte inattendue"];
+      const suffixes = ["dans le domaine de la tech.", "à l'international.", "grâce à un partenariat stratégique.", "malgré des critiques du marché.", "en collaboration avec une startup.", "selon des sources internes."];
+      let actus = [];
+      for (let i = 0; i < 3; i++) {
+        const phrase = `${nom} ${themes[Math.floor(Math.random() * themes.length)]} ${suffixes[Math.floor(Math.random() * suffixes.length)]}`;
+        actus.push(phrase);
+      }
+      return actus;
+    }
+
+    function analyserSentiment(textes) {
+      const texte = textes.join(" ").toLowerCase();
+      let score = 0;
+      motsPositifs.forEach(mot => { if (texte.includes(mot)) score++; });
+      motsNegatifs.forEach(mot => { if (texte.includes(mot)) score--; });
+      return score;
+    }
+
+    function afficherEntreprise(nom) {
+      document.getElementById("titre-entreprise").textContent = nom;
+
+      const cours = Array.from({length: 10}, () => (Math.random() * 100 + 100).toFixed(2));
+      graphiqueCours.data.datasets[0].data = cours;
+      graphiqueCours.update();
+
+      const actualites = genererActusIA(nom);
+      const sentiment = analyserSentiment(actualites);
+      const probaMonte = Math.max(0.1, Math.min(0.9, 0.5 + sentiment * 0.05));
+      const coteMonte = (1 / probaMonte).toFixed(2);
+      const coteDescend = (1 / (1 - probaMonte)).toFixed(2);
+
+      const lienActus = entreprises[nom].lienActus;
+
+      document.getElementById("actus").innerHTML = `
+        <p><strong>Actualités (IA) :</strong></p>
+        <ul>${actualites.map(a => `<li>${a}</li>`).join("")}</ul>
+        <p>📈 Cote montée : ${coteMonte}x</p>
+        <p>📉 Cote descente : ${coteDescend}x</p>
+        <button class="bouton-vert" onclick="parier(${coteMonte}, ${probaMonte}, '${nom}', 'monte')">Parier sur montée</button>
+        <button class="bouton-rouge" onclick="parier(${coteDescend}, ${1 - probaMonte}, '${nom}', 'descend')">Parier sur descente</button>
+        <p><a href="${lienActus}" target="_blank" style="color: #3498db;">🔗 Voir les actualités officielles de ${nom}</a></p>
+      `;
+    }
+
+    function parier(cote, proba, entreprise, type) {
+      const mise = parseFloat(document.getElementById("input-mise").value);
+      if (isNaN(mise) || mise < 1) {
+        alert("Veuillez entrer une mise valide.");
+        return;
+      }
+      if (mise > solde) {
+        alert("Solde insuffisant !");
+        return;
+      }
+      const gagne = Math.random() < proba;
+      let gain = 0;
+      if (gagne) {
+        gain = (mise * cote - mise).toFixed(2);
+        solde += parseFloat(gain);
+        document.getElementById("resultat-simulation").innerHTML = `<span style="color:#2ecc71;">Gagné ! +${gain} pièces</span>`;
+      } else {
+        gain = -mise;
+        solde += gain;
+        document.getElementById("resultat-simulation").innerHTML = `<span style="color:#e74c3c;">Perdu ! -${mise} pièces</span>`;
+      }
+      document.getElementById("solde").textContent = solde.toFixed(2);
+      majHistorique(parseFloat(gain), entreprise, type);
+    }
+
+    document.getElementById("reset").onclick = () => {
+      solde = 100;
+      historiqueParis = [];
+      graphiqueHistorique.data.labels = [];
+      graphiqueHistorique.data.datasets[0].data = [];
+      graphiqueHistorique.update();
+      document.getElementById("solde").textContent = "100";
+      document.getElementById("resultat-simulation").innerHTML = "";
+      document.getElementById("actus").innerHTML = "";
+      document.getElementById("titre-entreprise").textContent = "";
+      graphiqueCours.data.datasets[0].data = [];
+      graphiqueCours.update();
+    };
+
+    Object.entries(entreprises).forEach(([nom, info]) => {
+      const div = document.createElement("div");
+      div.className = "carte-entreprise";
+      div.innerHTML = `<img src="${info.logo}" alt="${nom}" /><div>${nom}</div>`;
+      div.onclick = () => afficherEntreprise(nom);
+      document.getElementById("cartes-entreprises").appendChild(div);
+    });
+  </script>
+</body>
+</html>
+<!--
+  Ce code HTML génère une page web interactive pour simuler des paris sur les actions des entreprises GAFAM.
+  Il utilise Chart.js pour afficher des graphiques et inclut des fonctionnalités de simulation de paris.
+  Les actualités sont générées aléatoirement et analysées pour déterminer un sentiment positif ou négatif.
+  Les utilisateurs peuvent parier sur la montée ou la descente des actions et voir les résultats de leurs paris.
+  Le solde de l'utilisateur est mis à jour en fonction des gains ou pertes, et un historique des paris est affiché. 
+  Les actualites sont toutes predefini et ne  sont pas en temps reel.
+
